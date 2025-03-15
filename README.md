@@ -24,7 +24,7 @@ Before running the installer, you'll need to have the following installed:
 
 ## What This Installs
 
-This installer configures Claude Desktop with seven essential MCP servers for marketing work:
+This installer configures Claude Desktop with eight essential MCP servers for marketing work:
 
 1. **Brave Search** - For market research and trend analysis
    - Search for the latest industry trends and competitor information
@@ -67,6 +67,12 @@ This installer configures Claude Desktop with seven essential MCP servers for ma
    - Get recent information about marketing trends and news
    - Analyze competitor strategies and market positions
    - **Requires API key:** Obtain from [Perplexity AI](https://perplexity.ai/)
+
+8. **Fetch** - For retrieving web content from specific URLs
+   - Access and analyze articles and blog posts
+   - Extract content from websites for research
+   - Monitor specific pages for changes
+   - **No API key required**
 
 ## Installation Instructions
 
