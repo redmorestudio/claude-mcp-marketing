@@ -74,7 +74,7 @@ echo.
 :: Create Claude Desktop config directory if it doesn't exist
 if not exist "%APPDATA%\Claude" mkdir "%APPDATA%\Claude"
 
-:: Create a basic Claude Desktop config file if it doesn't exist
+:: Check if configuration file exists, create if not
 if not exist "%APPDATA%\Claude\claude_desktop_config.json" (
     echo Creating new Claude Desktop configuration file...
     (
@@ -85,8 +85,8 @@ if not exist "%APPDATA%\Claude\claude_desktop_config.json" (
 )
 
 :: Initialize tracking variables
-set SUCCESSFUL_INSTALLS=
-set FAILED_INSTALLS=
+set "SUCCESSFUL_INSTALLS="
+set "FAILED_INSTALLS="
 
 :: Install MCP servers using mcp-get
 echo Installing MCP servers using mcp-get...
@@ -195,6 +195,141 @@ if "%PYTHON_INSTALLED%"=="true" if "%PIP_INSTALLED%"=="true" (
 
 echo.
 echo =======================================================
+echo Configuration - API Keys
+echo =======================================================
+echo.
+echo Some MCP servers require API keys to function properly.
+echo Let's set them up now so you don't have to edit config files manually.
+echo.
+
+:: Install Node.js json tool for editing the config file
+echo Installing tools to update configuration...
+call npm install -g json >nul 2>nul
+
+:: Update Claude Desktop config with provided API keys
+:: This function takes 3 parameters: server name, env var name, and the key value
+:update_config
+setlocal enabledelayedexpansion
+set config_path=%APPDATA%\Claude\claude_desktop_config.json
+set temp_config=%TEMP%\claude_config_temp.json
+
+:: Create config if it doesn't exist
+if not exist "%config_path%" (
+  echo { "mcpServers": {} } > "%config_path%"
+)
+
+:: Use node to update the config
+node -e "const fs=require('fs'); const path='%config_path%'; const server='%~1'; const env_var='%~2'; const value='%~3'; let config=JSON.parse(fs.readFileSync(path)); config.mcpServers = config.mcpServers || {}; config.mcpServers[server] = config.mcpServers[server] || {}; config.mcpServers[server].env = config.mcpServers[server].env || {}; config.mcpServers[server].env[env_var] = value; fs.writeFileSync(path, JSON.stringify(config, null, 2));"
+
+echo √ Updated configuration for %~1
+goto :eof
+
+:: Check if Brave Search was installed
+echo %SUCCESSFUL_INSTALLS% | findstr /C:"Brave-Search" >nul
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo Brave Search requires an API key to function.
+    set /p has_brave_key="Do you already have a Brave Search API key? (y/n): "
+    
+    if /i "%has_brave_key%"=="y" (
+        set /p brave_api_key="Please enter your Brave Search API key: "
+        call :update_config "brave-search" "BRAVE_SEARCH_API_KEY" "%brave_api_key%"
+    ) else (
+        set /p get_brave_key="Would you like to get a Brave Search API key now? (y/n): "
+        if /i "%get_brave_key%"=="y" (
+            echo Opening Brave Search API website...
+            start https://brave.com/search/api/
+            echo After you get your API key, you can run this script again to configure it.
+        ) else (
+            echo ⚠️ Brave Search will be installed but won't work without an API key.
+            echo You can run this script again later to add your API key.
+        )
+    )
+)
+
+:: Check if Perplexity was installed
+echo %SUCCESSFUL_INSTALLS% | findstr /C:"Perplexity" >nul
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo Perplexity requires an API key to function.
+    set /p has_perplexity_key="Do you already have a Perplexity API key? (y/n): "
+    
+    if /i "%has_perplexity_key%"=="y" (
+        set /p perplexity_api_key="Please enter your Perplexity API key: "
+        call :update_config "perplexity-mcp" "PERPLEXITY_API_KEY" "%perplexity_api_key%"
+        
+        echo Options: sonar, sonar-pro, sonar-deep-research, sonar-reasoning, sonar-reasoning-pro
+        set /p perplexity_model="Which Perplexity model would you like to use? (default: sonar): "
+        
+        if not "%perplexity_model%"=="" (
+            call :update_config "perplexity-mcp" "PERPLEXITY_MODEL" "%perplexity_model%"
+        ) else (
+            call :update_config "perplexity-mcp" "PERPLEXITY_MODEL" "sonar"
+        )
+    ) else (
+        set /p get_perplexity_key="Would you like to get a Perplexity API key now? (y/n): "
+        if /i "%get_perplexity_key%"=="y" (
+            echo Opening Perplexity website...
+            start https://perplexity.ai/
+            echo After you get your API key, you can run this script again to configure it.
+        ) else (
+            echo ⚠️ Perplexity will be installed but won't work without an API key.
+            echo You can run this script again later to add your API key.
+        )
+    )
+)
+
+:: Check if Slack was installed
+echo %SUCCESSFUL_INSTALLS% | findstr /C:"Slack" >nul
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo Slack requires a Bot Token to function.
+    set /p has_slack_token="Do you already have a Slack Bot Token? (y/n): "
+    
+    if /i "%has_slack_token%"=="y" (
+        set /p slack_bot_token="Please enter your Slack Bot Token (starts with xoxb-): "
+        call :update_config "slack" "SLACK_BOT_TOKEN" "%slack_bot_token%"
+    ) else (
+        set /p get_slack_token="Would you like to set up a Slack app to get a Bot Token now? (y/n): "
+        if /i "%get_slack_token%"=="y" (
+            echo Opening Slack API website...
+            start https://api.slack.com/apps
+            echo After you get your Slack Bot Token, you can run this script again to configure it.
+        ) else (
+            echo ⚠️ Slack will be installed but won't work without a Bot Token.
+            echo You can run this script again later to add your token.
+        )
+    )
+)
+
+:: Check if Bluesky was installed
+echo %SUCCESSFUL_INSTALLS% | findstr /C:"Bluesky" >nul
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo Bluesky requires your username and app password to function.
+    set /p has_bluesky_creds="Do you already have a Bluesky account and app password? (y/n): "
+    
+    if /i "%has_bluesky_creds%"=="y" (
+        set /p bluesky_username="Please enter your Bluesky username: "
+        set /p bluesky_app_password="Please enter your Bluesky app password: "
+        call :update_config "bluesky" "BLUESKY_USERNAME" "%bluesky_username%"
+        call :update_config "bluesky" "BLUESKY_APP_PASSWORD" "%bluesky_app_password%"
+    ) else (
+        set /p get_bluesky_creds="Would you like to set up a Bluesky account and app password now? (y/n): "
+        if /i "%get_bluesky_creds%"=="y" (
+            echo Opening Bluesky website...
+            start https://bsky.app/
+            echo After creating your account, go to Settings ^> Privacy and Security ^> App Passwords
+            echo After you get your app password, you can run this script again to configure it.
+        ) else (
+            echo ⚠️ Bluesky will be installed but won't work without credentials.
+            echo You can run this script again later to add your credentials.
+        )
+    )
+)
+
+echo.
+echo =======================================================
 echo Installation Summary
 echo =======================================================
 echo.
@@ -208,30 +343,13 @@ if NOT "%FAILED_INSTALLS%"=="" (
     echo.
 )
 
-echo API Key Requirements:
-echo -----------------------------------------------------
-echo 1. Brave Search - Requires API key from: https://brave.com/search/api/
-echo 2. Slack - Requires Slack Bot Token from: https://api.slack.com/apps
-echo 3. Bluesky - Requires App Password from Bluesky settings
-echo 4. Perplexity - Requires API key from: https://perplexity.ai/
-echo.
-echo To configure your API keys, edit your Claude Desktop configuration file at:
-echo %APPDATA%\Claude\claude_desktop_config.json
-echo.
-echo Example configuration for API keys:
-echo   "brave-search": {
-echo     "env": {
-echo       "BRAVE_SEARCH_API_KEY": "YOUR_API_KEY_HERE"
-echo     }
-echo   },
-echo.
 echo Next Steps:
 echo 1. Close Claude Desktop if it's running
-echo 2. Add API keys to the configuration file (see README for details)
-echo 3. Open Claude Desktop again
-echo 4. Look for the hammer icon in the bottom right of the text input area
+echo 2. Open Claude Desktop again
+echo 3. Look for the hammer icon in the bottom right of the text input area
 echo.
-echo For detailed instructions, see the README.md file.
+echo If you need to add API keys later, just run this script again.
+echo Your installed servers will remain untouched.
 echo.
 
 pause
