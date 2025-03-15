@@ -30,7 +30,7 @@ This installer configures Claude Desktop with eight essential MCP servers for ma
    - Search for the latest industry trends and competitor information
    - Research customer preferences and behavior
    - Find inspiration for campaigns and content
-   - **Requires API key:** Get one from [Brave Search API](https://brave.com/search/api/)
+   - **Requires API key:** You'll be prompted to enter it or directed to get one
 
 2. **File System** - For accessing and organizing marketing documents
    - Organize marketing materials and assets
@@ -54,19 +54,19 @@ This installer configures Claude Desktop with eight essential MCP servers for ma
    - Send and receive messages on Slack
    - Create automated workflows with your marketing team
    - Schedule and manage campaign updates
-   - **Requires Slack Bot Token:** Create one at [Slack API](https://api.slack.com/apps)
+   - **Requires Slack Bot Token:** You'll be prompted to enter it or directed to create one
 
 6. **Bluesky** - For social media content creation and engagement
    - Create and publish Bluesky posts
    - Analyze engagement and community growth
    - Monitor trends and conversations
-   - **Requires App Password:** Generate in Bluesky's Settings > Privacy and Security > App Passwords
+   - **Requires Bluesky credentials:** You'll be prompted to enter them or directed to create an account
 
 7. **Perplexity** - For advanced web search and research capabilities
    - Perform in-depth research with source citations
    - Get recent information about marketing trends and news
    - Analyze competitor strategies and market positions
-   - **Requires API key:** Obtain from [Perplexity AI](https://perplexity.ai/)
+   - **Requires API key:** You'll be prompted to enter it or directed to get one
 
 8. **Fetch** - For retrieving web content from specific URLs
    - Access and analyze articles and blog posts
@@ -82,7 +82,7 @@ This installer configures Claude Desktop with eight essential MCP servers for ma
 2. Download the [marketing-mcp-installer.bat](marketing-mcp-installer.bat) file
 3. Double-click the file to run it
 4. The script will check for the required dependencies and install the MCP servers
-5. After installation, you'll need to configure your API keys (see below)
+5. When prompted, enter any API keys you already have, or choose to get them later
 6. Once the installation is complete, restart Claude Desktop
 7. Look for the hammer icon in the bottom right of the text input area
 
@@ -94,63 +94,33 @@ This installer configures Claude Desktop with eight essential MCP servers for ma
 4. Type `chmod +x ` (with a space after it)
 5. Drag the marketing-mcp-installer.sh file into Terminal and press Enter
 6. Now drag the file into Terminal again and press Enter to run it
-7. After installation, you'll need to configure your API keys (see below)
+7. When prompted, enter any API keys you already have, or choose to get them later
 8. Once the installation is complete, restart Claude Desktop
 9. Look for the hammer icon in the bottom right of the text input area
 
-## Configuring API Keys
+## Getting API Keys
 
-After running the installer, you will need to configure API keys for some of the MCP servers. Edit your Claude Desktop configuration file at:
+If you don't already have the necessary API keys, here's how to get them:
 
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-- **Mac:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Linux:** `~/.config/Claude/claude_desktop_config.json`
+1. **Brave Search API Key**: Sign up at [Brave Search API](https://brave.com/search/api/)
+   - Create a Brave account if you don't have one
+   - Navigate to the API section
+   - Register for an API key
 
-Add environment variables for each service that requires an API key. For example:
-
-```json
-{
-  "mcpServers": {
-    "brave-search": {
-      "env": {
-        "BRAVE_SEARCH_API_KEY": "YOUR_BRAVE_API_KEY_HERE"
-      }
-    },
-    "perplexity-mcp": {
-      "env": {
-        "PERPLEXITY_API_KEY": "YOUR_PERPLEXITY_API_KEY_HERE"
-      }
-    },
-    "slack": {
-      "env": {
-        "SLACK_BOT_TOKEN": "xoxb-YOUR_SLACK_BOT_TOKEN_HERE"
-      }
-    },
-    "bluesky": {
-      "env": {
-        "BLUESKY_USERNAME": "YOUR_BLUESKY_USERNAME",
-        "BLUESKY_APP_PASSWORD": "YOUR_BLUESKY_APP_PASSWORD"
-      }
-    }
-  }
-}
-```
-
-### How to Get API Keys
-
-1. **Brave Search API Key**: Sign up at [Brave Search API](https://brave.com/search/api/) to get your API key.
-
-2. **Perplexity API Key**: Create an account at [Perplexity AI](https://perplexity.ai/) and get your API key in the account settings.
+2. **Perplexity API Key**: Create an account at [Perplexity AI](https://perplexity.ai/)
+   - Sign up for an account
+   - Go to your account settings
+   - Generate an API key
 
 3. **Slack Bot Token**: 
    - Go to [Slack API Apps](https://api.slack.com/apps)
    - Create a new app
    - Add necessary bot token scopes under "OAuth & Permissions"
    - Install the app to your workspace
-   - The token starts with "xoxb-"
+   - Copy the Bot User OAuth Token (starts with "xoxb-")
 
 4. **Bluesky App Password**:
-   - Log in to your Bluesky account
+   - Create an account at [Bluesky](https://bsky.app/)
    - Go to Settings > Privacy and Security > App Passwords
    - Create a new app password
 
@@ -160,7 +130,7 @@ If you encounter issues during installation:
 
 1. **Node.js not found**: Make sure Node.js is properly installed and in your PATH
 2. **Python not found**: Ensure Python is installed and in your PATH
-3. **Server not showing up**: Check the Claude Desktop configuration file to ensure it was properly updated
-4. **API key errors**: Verify you've added the correct API keys to the configuration file
+3. **Server not showing up**: Restart Claude Desktop and check for the hammer icon
+4. **API key errors**: Run the installer again to update your API keys
 
 If a specific MCP server fails to install, the others should still work. You can retry installing the failed server after fixing any issues.
