@@ -1,14 +1,30 @@
 # Claude MCP for Marketing Professionals
 
-A simple one-click installer for the most useful Model Context Protocol (MCP) servers for marketing professionals using Claude.
+A simple installer for the most useful Model Context Protocol (MCP) servers for marketing professionals using Claude.
 
 ## What is MCP?
 
 Model Context Protocol (MCP) allows Claude to connect with external tools, websites, and data sources—dramatically expanding what it can do for you. With MCP, Claude can search the web, access your files, remember important information, and much more.
 
+## Prerequisites
+
+Before running the installer, you'll need to have the following installed:
+
+1. **Node.js** (Required for most MCP servers)
+   - Download and install from [nodejs.org](https://nodejs.org/) (LTS version recommended)
+   - After installation, verify it works by opening a terminal/command prompt and typing `node --version`
+
+2. **Python** (Required for Perplexity integration)
+   - Download and install from [python.org/downloads](https://python.org/downloads/) (Python 3.10 or higher)
+   - Make sure to check "Add Python to PATH" during installation (Windows)
+   - After installation, verify it works by typing `python --version` in a terminal/command prompt
+
+3. **Claude Desktop**
+   - Download from [claude.ai/download](https://claude.ai/download) if you haven't already
+
 ## What This Installs
 
-This simple installer automatically configures Claude Desktop with seven essential MCP servers for marketing work:
+This installer configures Claude Desktop with seven essential MCP servers for marketing work:
 
 1. **Brave Search** - For market research and trend analysis
    - Search for the latest industry trends and competitor information
@@ -56,21 +72,22 @@ This simple installer automatically configures Claude Desktop with seven essenti
 
 ### For Windows Users
 
-1. Download the [marketing-mcp-installer.bat](marketing-mcp-installer.bat) file
-2. Double-click the file to run it
-3. If prompted about Node.js, follow the installation prompts to install it
-4. After installation, you'll need to configure your API keys (see below)
-5. Once the installation is complete, restart Claude Desktop
-6. Look for the hammer icon in the bottom right of the text input area
+1. Make sure you've installed Node.js and Python as described in the prerequisites
+2. Download the [marketing-mcp-installer.bat](marketing-mcp-installer.bat) file
+3. Double-click the file to run it
+4. The script will check for the required dependencies and install the MCP servers
+5. After installation, you'll need to configure your API keys (see below)
+6. Once the installation is complete, restart Claude Desktop
+7. Look for the hammer icon in the bottom right of the text input area
 
 ### For Mac Users
 
-1. Download the [marketing-mcp-installer.sh](marketing-mcp-installer.sh) file
-2. Open Terminal (search for "Terminal" in Spotlight)
-3. Type `chmod +x ` (with a space after it)
-4. Drag the marketing-mcp-installer.sh file into Terminal and press Enter
-5. Now drag the file into Terminal again and press Enter to run it
-6. If prompted about Node.js, follow the instructions to install it
+1. Make sure you've installed Node.js and Python as described in the prerequisites
+2. Download the [marketing-mcp-installer.sh](marketing-mcp-installer.sh) file
+3. Open Terminal (search for "Terminal" in Spotlight)
+4. Type `chmod +x ` (with a space after it)
+5. Drag the marketing-mcp-installer.sh file into Terminal and press Enter
+6. Now drag the file into Terminal again and press Enter to run it
 7. After installation, you'll need to configure your API keys (see below)
 8. Once the installation is complete, restart Claude Desktop
 9. Look for the hammer icon in the bottom right of the text input area
@@ -130,3 +147,14 @@ Add environment variables for each service that requires an API key. For example
    - Log in to your Bluesky account
    - Go to Settings > Privacy and Security > App Passwords
    - Create a new app password
+
+## Troubleshooting
+
+If you encounter issues during installation:
+
+1. **Node.js not found**: Make sure Node.js is properly installed and in your PATH
+2. **Python not found**: Ensure Python is installed and in your PATH
+3. **Server not showing up**: Check the Claude Desktop configuration file to ensure it was properly updated
+4. **API key errors**: Verify you've added the correct API keys to the configuration file
+
+If a specific MCP server fails to install, the others should still work. You can retry installing the failed server after fixing any issues.
