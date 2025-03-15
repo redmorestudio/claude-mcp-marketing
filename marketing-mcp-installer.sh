@@ -1,67 +1,78 @@
 #!/bin/bash
 
 echo "======================================================="
-echo "Marketing MCP Servers - One-Click Installer"
+echo "Marketing MCP Servers - Installer"
 echo "======================================================="
 echo
-echo "This script will automatically install the most useful"
-echo "MCP servers for marketing professionals using Claude."
+echo "This script will install the most useful MCP servers"
+echo "for marketing professionals using Claude."
 echo
-echo "Please wait while we set everything up..."
+echo "Checking prerequisites..."
 echo
 
 # Check for Node.js installation
 if ! command -v node &> /dev/null; then
-    echo "Node.js is not installed."
-    echo "Installing Node.js..."
-    
-    # Check if macOS or Linux
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS - try to use brew if available
-        if command -v brew &> /dev/null; then
-            brew install node
-        else
-            echo "Please install Homebrew first with this command:"
-            echo '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-            echo "Then run this script again."
-            exit 1
-        fi
-    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Ubuntu/Debian
-        if command -v apt-get &> /dev/null; then
-            sudo apt-get update
-            sudo apt-get install -y nodejs npm
-        # Fedora/RHEL/CentOS
-        elif command -v dnf &> /dev/null; then
-            sudo dnf install -y nodejs npm
-        else
-            echo "Could not automatically install Node.js."
-            echo "Please install Node.js from https://nodejs.org/"
-            exit 1
-        fi
-    else
-        echo "Unsupported operating system for automatic Node.js installation."
-        echo "Please install Node.js from https://nodejs.org/"
-        exit 1
-    fi
-fi
-
-# Verify Node.js installation
-if ! command -v node &> /dev/null; then
-    echo "Node.js installation failed. Please install it manually from https://nodejs.org/"
+    echo "❌ Node.js is not installed."
+    echo "Please install Node.js from https://nodejs.org/ (LTS version recommended)"
+    echo "After installing, restart this script."
     exit 1
 else
-    echo "Node.js is installed successfully."
+    NODE_VERSION=$(node --version)
+    echo "✅ Node.js is installed (version: $NODE_VERSION)"
 fi
 
-# Check npm version
+# Check for npm installation
 if ! command -v npm &> /dev/null; then
-    echo "Error: npm is not installed properly."
-    echo "Please install Node.js from https://nodejs.org/"
+    echo "❌ npm is not installed or not in PATH."
+    echo "Please reinstall Node.js from https://nodejs.org/"
     exit 1
+else
+    NPM_VERSION=$(npm --version)
+    echo "✅ npm is installed (version: $NPM_VERSION)"
 fi
 
+# Check for Python installation for Perplexity
+if ! command -v python3 &> /dev/null && ! command -v python &> /dev/null; then
+    echo "❌ Python is not installed."
+    echo "Python is required for the Perplexity MCP server."
+    echo "Please install Python from https://www.python.org/downloads/ (Python 3.10+ recommended)"
+    echo "The Perplexity server will be skipped, but other servers will still be installed."
+    PYTHON_INSTALLED=false
+else
+    if command -v python3 &> /dev/null; then
+        PYTHON_COMMAND="python3"
+    else
+        PYTHON_COMMAND="python"
+    fi
+    PYTHON_VERSION=$($PYTHON_COMMAND --version)
+    echo "✅ Python is installed ($PYTHON_VERSION)"
+    PYTHON_INSTALLED=true
+fi
+
+# Check for pip installation
+if $PYTHON_INSTALLED; then
+    if ! command -v pip3 &> /dev/null && ! command -v pip &> /dev/null; then
+        echo "❌ pip is not installed or not in PATH."
+        echo "pip is required for the Perplexity MCP server."
+        echo "The Perplexity server will be skipped, but other servers will still be installed."
+        PIP_INSTALLED=false
+    else
+        if command -v pip3 &> /dev/null; then
+            PIP_COMMAND="pip3"
+        else
+            PIP_COMMAND="pip"
+        fi
+        PIP_VERSION=$($PIP_COMMAND --version)
+        echo "✅ pip is installed"
+        PIP_INSTALLED=true
+    fi
+else
+    PIP_INSTALLED=false
+fi
+
+echo
 echo "Installing essential marketing MCP servers..."
+echo
 
 # Create Claude Desktop config directory if it doesn't exist
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -84,96 +95,140 @@ if [ -f "$CONFIG_PATH" ]; then
     cp "$CONFIG_PATH" "${CONFIG_PATH}.backup"
 fi
 
-# Create the Claude Desktop config file with 7 useful marketing MCP servers
-echo "Creating Claude Desktop configuration with marketing MCP servers..."
-
-# Get Document and Desktop paths for file system server
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    DOCUMENTS_PATH="$HOME/Documents"
-    DESKTOP_PATH="$HOME/Desktop"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    # Linux
-    DOCUMENTS_PATH="$HOME/Documents"
-    DESKTOP_PATH="$HOME/Desktop"
+# Create a basic Claude Desktop config file if it doesn't exist
+if [ ! -f "$CONFIG_PATH" ]; then
+    echo "Creating new Claude Desktop configuration file..."
+    echo "{\"mcpServers\": {}}" > "$CONFIG_PATH"
 else
-    # Windows (not applicable in bash, but for documentation)
-    DOCUMENTS_PATH="%USERPROFILE%\\Documents"
-    DESKTOP_PATH="%USERPROFILE%\\Desktop"
+    # Check if the file has valid JSON
+    if ! jq . "$CONFIG_PATH" &>/dev/null; then
+        echo "Warning: Existing configuration file is not valid JSON. Creating a new one..."
+        echo "{\"mcpServers\": {}}" > "$CONFIG_PATH"
+    fi
 fi
-
-# Generate a template for the configuration file
-cat > "$CONFIG_PATH" << EOL
-{
-  "mcpServers": {}
-}
-EOL
 
 # Install MCP servers using mcp-get
 echo "Installing MCP servers using mcp-get..."
 
+# Track installation success/failure
+SUCCESSFUL_INSTALLS=()
+FAILED_INSTALLS=()
+
 # Install Brave Search
+echo
 echo "Installing Brave Search MCP server..."
-npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-brave-search
+if npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-brave-search; then
+    SUCCESSFUL_INSTALLS+=("Brave Search")
+    echo "✅ Brave Search MCP server installed successfully"
+else
+    FAILED_INSTALLS+=("Brave Search")
+    echo "❌ Failed to install Brave Search MCP server"
+fi
 
 # Install File System
+echo
 echo "Installing File System MCP server..."
-npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-filesystem
+if npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-filesystem; then
+    SUCCESSFUL_INSTALLS+=("File System")
+    echo "✅ File System MCP server installed successfully"
+else
+    FAILED_INSTALLS+=("File System")
+    echo "❌ Failed to install File System MCP server"
+fi
 
 # Install Memory
+echo
 echo "Installing Memory MCP server..."
-npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-memory
+if npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-memory; then
+    SUCCESSFUL_INSTALLS+=("Memory")
+    echo "✅ Memory MCP server installed successfully"
+else
+    FAILED_INSTALLS+=("Memory")
+    echo "❌ Failed to install Memory MCP server"
+fi
 
 # Install Puppeteer
+echo
 echo "Installing Puppeteer MCP server..."
-npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-puppeteer
+if npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-puppeteer; then
+    SUCCESSFUL_INSTALLS+=("Puppeteer")
+    echo "✅ Puppeteer MCP server installed successfully"
+else
+    FAILED_INSTALLS+=("Puppeteer")
+    echo "❌ Failed to install Puppeteer MCP server"
+fi
 
 # Install Slack
+echo
 echo "Installing Slack MCP server..."
-npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-slack
+if npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-slack; then
+    SUCCESSFUL_INSTALLS+=("Slack")
+    echo "✅ Slack MCP server installed successfully"
+else
+    FAILED_INSTALLS+=("Slack")
+    echo "❌ Failed to install Slack MCP server"
+fi
 
 # Install Bluesky
+echo
 echo "Installing Bluesky MCP server..."
-npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-bluesky
-
-# Install Perplexity
-echo "Installing Perplexity MCP server..."
-# Using Perpelexity with uv package manager if available
-if command -v uv &> /dev/null; then
-    uv pip install perplexity-mcp
+if npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-bluesky; then
+    SUCCESSFUL_INSTALLS+=("Bluesky")
+    echo "✅ Bluesky MCP server installed successfully"
 else
-    if command -v pip &> /dev/null; then
-        pip install perplexity-mcp
+    FAILED_INSTALLS+=("Bluesky")
+    echo "❌ Failed to install Bluesky MCP server"
+fi
+
+# Install Perplexity if Python and pip are available
+if $PYTHON_INSTALLED && $PIP_INSTALLED; then
+    echo
+    echo "Installing Perplexity MCP server..."
+    if $PIP_COMMAND install perplexity-mcp; then
+        SUCCESSFUL_INSTALLS+=("Perplexity")
+        echo "✅ Perplexity MCP server installed successfully"
     else
-        echo "Warning: Could not install Perplexity MCP server. Please install pip or uv first."
+        FAILED_INSTALLS+=("Perplexity")
+        echo "❌ Failed to install Perplexity MCP server"
     fi
+else
+    echo
+    echo "Skipping Perplexity MCP server installation (Python/pip not available)"
+    FAILED_INSTALLS+=("Perplexity (missing Python/pip)")
 fi
 
 echo
-echo "Installation complete! Here's what's been installed:"
-echo "1. Brave Search - For market research and trend analysis"
-echo "   Requires API key from: https://brave.com/search/api/"
+echo "======================================================="
+echo "Installation Summary"
+echo "======================================================="
 echo
-echo "2. File System - For accessing and organizing marketing documents"
-echo "   No API key required"
+
+if [ ${#SUCCESSFUL_INSTALLS[@]} -gt 0 ]; then
+    echo "✅ Successfully installed MCP servers:"
+    for server in "${SUCCESSFUL_INSTALLS[@]}"; do
+        echo "  - $server"
+    done
+    echo
+fi
+
+if [ ${#FAILED_INSTALLS[@]} -gt 0 ]; then
+    echo "❌ Failed to install these MCP servers:"
+    for server in "${FAILED_INSTALLS[@]}"; do
+        echo "  - $server"
+    done
+    echo
+    echo "You can try installing them manually later or run this script again."
+    echo
+fi
+
+echo "API Key Requirements:"
+echo "-----------------------------------------------------"
+echo "1. Brave Search - Requires API key from: https://brave.com/search/api/"
+echo "2. Slack - Requires Slack Bot Token from: https://api.slack.com/apps"
+echo "3. Bluesky - Requires App Password from Bluesky settings"
+echo "4. Perplexity - Requires API key from: https://perplexity.ai/"
 echo
-echo "3. Memory - For saving important information between conversations"
-echo "   No API key required"
-echo
-echo "4. Puppeteer - For automating web browsing and collecting content"
-echo "   No API key required"
-echo
-echo "5. Slack - For team communication and workflow automation"
-echo "   Requires Slack Bot Token from: https://api.slack.com/apps"
-echo
-echo "6. Bluesky - For social media content creation and engagement"
-echo "   Requires App Password from: Bluesky's Settings > Privacy and Security > App Passwords"
-echo
-echo "7. Perplexity - For advanced web search and research capabilities"
-echo "   Requires API key from: https://perplexity.ai/"
-echo
-echo "IMPORTANT: For services requiring API keys, you'll need to configure them."
-echo "To do this, edit your Claude Desktop configuration file at:"
+echo "To configure your API keys, edit your Claude Desktop configuration file at:"
 echo "$CONFIG_PATH"
 echo
 echo "Example configuration for API keys:"
@@ -182,19 +237,14 @@ echo '    "env": {'
 echo '      "BRAVE_SEARCH_API_KEY": "YOUR_API_KEY_HERE"'
 echo '    }'
 echo '  },'
-echo '  "perplexity-mcp": {'
-echo '    "env": {'
-echo '      "PERPLEXITY_API_KEY": "YOUR_API_KEY_HERE"'
-echo '    }'
-echo '  }'
 echo
-echo "Now you need to:"
+echo "Next Steps:"
 echo "1. Close Claude Desktop if it's running"
-echo "2. Ensure you've added API keys to the configuration file"
+echo "2. Add API keys to the configuration file (see README for details)"
 echo "3. Open Claude Desktop again"
 echo "4. Look for the hammer icon in the bottom right of the text input area"
 echo
-echo "Enjoy using Claude with MCP for your marketing work!"
+echo "For detailed instructions, see the README.md file."
 echo
 
 read -p "Press Enter to exit..."
