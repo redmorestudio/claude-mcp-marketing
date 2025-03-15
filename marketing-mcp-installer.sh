@@ -180,6 +180,17 @@ else
     echo "❌ Failed to install Bluesky MCP server"
 fi
 
+# Install Fetch
+echo
+echo "Installing Fetch MCP server..."
+if npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-fetch; then
+    SUCCESSFUL_INSTALLS+=("Fetch")
+    echo "✅ Fetch MCP server installed successfully"
+else
+    FAILED_INSTALLS+=("Fetch")
+    echo "❌ Failed to install Fetch MCP server"
+fi
+
 # Install Perplexity if Python and pip are available
 if $PYTHON_INSTALLED && $PIP_INSTALLED; then
     echo
