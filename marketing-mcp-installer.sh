@@ -84,73 +84,115 @@ if [ -f "$CONFIG_PATH" ]; then
     cp "$CONFIG_PATH" "${CONFIG_PATH}.backup"
 fi
 
-# Create the Claude Desktop config file with 6 useful marketing MCP servers
+# Create the Claude Desktop config file with 7 useful marketing MCP servers
 echo "Creating Claude Desktop configuration with marketing MCP servers..."
 
+# Get Document and Desktop paths for file system server
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    DOCUMENTS_PATH="$HOME/Documents"
+    DESKTOP_PATH="$HOME/Desktop"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    # Linux
+    DOCUMENTS_PATH="$HOME/Documents"
+    DESKTOP_PATH="$HOME/Desktop"
+else
+    # Windows (not applicable in bash, but for documentation)
+    DOCUMENTS_PATH="%USERPROFILE%\\Documents"
+    DESKTOP_PATH="%USERPROFILE%\\Desktop"
+fi
+
+# Generate a template for the configuration file
 cat > "$CONFIG_PATH" << EOL
 {
-  "mcpServers": {
-    "brave-search": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-brave-search"
-      ]
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "$HOME/Documents",
-        "$HOME/Desktop"
-      ]
-    },
-    "memory": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ]
-    },
-    "puppeteer": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-puppeteer"
-      ]
-    },
-    "slack": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-slack"
-      ]
-    },
-    "bluesky": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-bluesky"
-      ]
-    }
-  }
+  "mcpServers": {}
 }
 EOL
+
+# Install MCP servers using mcp-get
+echo "Installing MCP servers using mcp-get..."
+
+# Install Brave Search
+echo "Installing Brave Search MCP server..."
+npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-brave-search
+
+# Install File System
+echo "Installing File System MCP server..."
+npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-filesystem
+
+# Install Memory
+echo "Installing Memory MCP server..."
+npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-memory
+
+# Install Puppeteer
+echo "Installing Puppeteer MCP server..."
+npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-puppeteer
+
+# Install Slack
+echo "Installing Slack MCP server..."
+npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-slack
+
+# Install Bluesky
+echo "Installing Bluesky MCP server..."
+npx -y @michaellatman/mcp-get@latest install @modelcontextprotocol/server-bluesky
+
+# Install Perplexity
+echo "Installing Perplexity MCP server..."
+# Using Perpelexity with uv package manager if available
+if command -v uv &> /dev/null; then
+    uv pip install perplexity-mcp
+else
+    if command -v pip &> /dev/null; then
+        pip install perplexity-mcp
+    else
+        echo "Warning: Could not install Perplexity MCP server. Please install pip or uv first."
+    fi
+fi
 
 echo
 echo "Installation complete! Here's what's been installed:"
 echo "1. Brave Search - For market research and trend analysis"
+echo "   Requires API key from: https://brave.com/search/api/"
+echo
 echo "2. File System - For accessing and organizing marketing documents"
+echo "   No API key required"
+echo
 echo "3. Memory - For saving important information between conversations"
+echo "   No API key required"
+echo
 echo "4. Puppeteer - For automating web browsing and collecting content"
+echo "   No API key required"
+echo
 echo "5. Slack - For team communication and workflow automation"
+echo "   Requires Slack Bot Token from: https://api.slack.com/apps"
+echo
 echo "6. Bluesky - For social media content creation and engagement"
+echo "   Requires App Password from: Bluesky's Settings > Privacy and Security > App Passwords"
+echo
+echo "7. Perplexity - For advanced web search and research capabilities"
+echo "   Requires API key from: https://perplexity.ai/"
+echo
+echo "IMPORTANT: For services requiring API keys, you'll need to configure them."
+echo "To do this, edit your Claude Desktop configuration file at:"
+echo "$CONFIG_PATH"
+echo
+echo "Example configuration for API keys:"
+echo '  "brave-search": {'
+echo '    "env": {'
+echo '      "BRAVE_SEARCH_API_KEY": "YOUR_API_KEY_HERE"'
+echo '    }'
+echo '  },'
+echo '  "perplexity-mcp": {'
+echo '    "env": {'
+echo '      "PERPLEXITY_API_KEY": "YOUR_API_KEY_HERE"'
+echo '    }'
+echo '  }'
 echo
 echo "Now you need to:"
 echo "1. Close Claude Desktop if it's running"
-echo "2. Open Claude Desktop again"
-echo "3. Look for the hammer icon in the bottom right of the text input area"
+echo "2. Ensure you've added API keys to the configuration file"
+echo "3. Open Claude Desktop again"
+echo "4. Look for the hammer icon in the bottom right of the text input area"
 echo
 echo "Enjoy using Claude with MCP for your marketing work!"
 echo
