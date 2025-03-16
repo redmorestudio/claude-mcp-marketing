@@ -134,3 +134,14 @@ If you encounter issues during installation:
 4. **API key errors**: Run the installer again to update your API keys
 
 If a specific MCP server fails to install, the others should still work. You can retry installing the failed server after fixing any issues.
+
+## Features
+
+- **Automatic Detection**: The installer checks if servers are already installed before attempting to install them
+- **Configuration Management**: Automatically detects previously configured API keys and only prompts for missing ones
+- **Installation Summary**: Provides a clear summary of what was installed and what might have failed
+- **Easy Updates**: Run the installer again at any time to update your configuration or add new API keys
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
